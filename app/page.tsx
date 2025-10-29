@@ -36,6 +36,9 @@ export default function HomePage() {
           <span className="tracking-wide font-semibold">Silent Gallery</span>
         </div>
         <nav className="hidden sm:flex items-center gap-6 text-sm opacity-80">
+          <a href="/gallery" className="hover:opacity-100 transition-opacity">
+            Gallery
+          </a>
           <a href="#about" className="hover:opacity-100 transition-opacity">
             Concept
           </a>
@@ -63,10 +66,10 @@ export default function HomePage() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
-                href="#how"
+                href="/gallery"
                 className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 bg-white text-[#0f1220] text-sm font-medium shadow hover:shadow-lg transition-shadow"
               >
-                はじめ方を見る <ArrowRight className="h-4 w-4" />
+                ギャラリーを見る <ArrowRight className="h-4 w-4" />
               </a>
               <a
                 href="#features"
