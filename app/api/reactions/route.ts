@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 投稿のすべてのリアクションを取得
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (db as any)
       .select()
       .from(reactions)
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 投稿が存在し、まだ期限切れでないことを確認
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const postResult = await (db as any)
       .select()
       .from(posts)
@@ -86,6 +88,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 既に同じユーザーが同じ投稿にリアクションしているか確認
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const existingReaction = await (db as any)
       .select()
       .from(reactions)
@@ -94,6 +97,7 @@ export async function POST(request: NextRequest) {
 
     if (existingReaction.length > 0) {
       // 既存のリアクションを更新
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (db as any)
         .update(reactions)
         .set({ kind, createdAt: now })
@@ -116,6 +120,7 @@ export async function POST(request: NextRequest) {
       createdAt: now,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (db as any).insert(reactions).values(newReaction);
 
     return NextResponse.json({
@@ -144,6 +149,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // リアクションを削除
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (db as any)
       .delete(reactions)
       .where(and(eq(reactions.postId, postId), eq(reactions.userId, session.user.id)));

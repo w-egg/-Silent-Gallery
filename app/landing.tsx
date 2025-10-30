@@ -130,7 +130,7 @@ export default function SilentGalleryLP() {
               body:
                 "閲覧者は抽象リアクションで余韻を置きます。反応も7日で消え、写真は個人ページに静かに積もります。",
             },
-          ].map((s, i) => (
+          ].map((s) => (
             <li
               key={s.step}
               className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-2"

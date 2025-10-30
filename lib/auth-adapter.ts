@@ -47,14 +47,17 @@ export function createSilentGalleryAdapter(db: DatabaseType): Adapter {
 
       console.log('📦 Inserting user:', newUser);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (db as any).insert(users).values(newUser);
 
       // ユーザーを取得して返す
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const createdUser = await (db as any)
         .select()
         .from(users)
         .where(eq(users.id, userId))
         .limit(1)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .then((rows: any[]) => rows[0]);
 
       console.log('✅ User created:', createdUser);

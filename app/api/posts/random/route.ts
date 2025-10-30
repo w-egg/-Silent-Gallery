@@ -9,6 +9,7 @@ export async function GET() {
     const now = new Date();
 
     // 7日以内の写真からランダムに1枚取得
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (db as any)
       .select()
       .from(posts)
