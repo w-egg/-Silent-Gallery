@@ -1,0 +1,47 @@
+# PRのファイル変更に基づいて自動的にラベルを付与
+
+'frontend':
+  - 'app/**/*'
+  - 'components/**/*'
+  - 'public/**/*'
+  - '*.css'
+  - '*.scss'
+
+'backend':
+  - 'app/api/**/*'
+  - 'lib/**/*'
+
+'database':
+  - 'packages/db/**/*'
+  - '**/schema*.ts'
+  - 'drizzle.config.ts'
+
+'auth':
+  - 'auth*.ts'
+  - 'app/api/auth/**/*'
+  - 'app/auth/**/*'
+  - 'lib/auth-*'
+
+'tests':
+  - '__tests__/**/*'
+  - '**/*.test.*'
+  - '**/*.spec.*'
+  - 'jest.config.*'
+  - 'jest.setup.*'
+
+'ci/cd':
+  - '.github/**/*'
+
+'documentation':
+  - '*.md'
+  - 'docs/**/*'
+
+'dependencies':
+  - 'package.json'
+  - 'package-lock.json'
+
+'configuration':
+  - '*.config.*'
+  - 'tsconfig*.json'
+  - '.env*'
+  - '.eslintrc*'
