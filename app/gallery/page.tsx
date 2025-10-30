@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 import type { Post } from '@/packages/db';
+import { LogOut, User } from 'lucide-react';
 
 type ReactionKind = 'moon' | 'feather' | 'water' | 'fire' | 'leaf';
 
@@ -189,19 +191,58 @@ export default function GalleryPage() {
 }
 
 function Header() {
+  const { status } = useSession();
+  const isAuthenticated = status === 'authenticated';
+  const isLoading = status === 'loading';
+
   return (
     <header className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between border-b border-white/10">
       <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
         <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-white/70 to-white/20 shadow-[0_0_40px_-10px_rgba(255,255,255,0.7)]" />
         <span className="tracking-wide font-semibold">Silent Gallery</span>
       </Link>
-      <nav className="flex items-center gap-6 text-sm opacity-80">
-        <Link href="/" className="hover:opacity-100 transition-opacity">
+      <nav className="flex items-center gap-6 text-sm">
+        <Link href="/" className="opacity-80 hover:opacity-100 transition-opacity">
           Home
         </Link>
-        <Link href="/gallery" className="hover:opacity-100 transition-opacity">
+        <Link href="/gallery" className="opacity-80 hover:opacity-100 transition-opacity">
           Gallery
         </Link>
+        {!isLoading && (
+          <>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/5 transition-all"
+                  title="マイページ"
+                >
+                  <User className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/post"
+                  className="px-4 py-2 rounded-2xl bg-white text-[#0f1220] font-medium hover:shadow-lg transition-all"
+                >
+                  投稿する
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/5 transition-all"
+                  title="ログアウト"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="px-4 py-2 rounded-2xl bg-white text-[#0f1220] font-medium hover:shadow-lg transition-all"
+              >
+                サインイン
+              </Link>
+            )}
+          </>
+        )}
       </nav>
     </header>
   );

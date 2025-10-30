@@ -1,8 +1,12 @@
 import 'server-only';
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import type { VercelPgDatabase } from 'drizzle-orm/vercel-postgres';
 
 const isDevelopment = process.env.NODE_ENV === 'development' && !process.env.POSTGRES_URL?.includes('vercel');
 
-let db: ReturnType<typeof import('drizzle-orm/better-sqlite3').drizzle> | ReturnType<typeof import('drizzle-orm/vercel-postgres').drizzle>;
+type DatabaseType = BetterSQLite3Database | VercelPgDatabase;
+
+let db: DatabaseType;
 let schema: typeof import('./schema.sqlite') | typeof import('./schema');
 
 if (isDevelopment) {
@@ -21,5 +25,5 @@ if (isDevelopment) {
 }
 
 export { db };
-export const { users, posts, reactions } = schema;
+export const { users, accounts, sessions, verificationTokens, posts, reactions } = schema;
 export type { User, NewUser, Post, NewPost, Reaction, NewReaction } from './schema';
