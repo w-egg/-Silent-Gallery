@@ -2,6 +2,10 @@
 
 > 今を残さず、今を感じる。/ 1日1枚・無言の写真が7日だけ漂う静寂SNS。
 
+[![CI](https://github.com/nakajima/silent-gallery/actions/workflows/ci.yml/badge.svg)](https://github.com/nakajima/silent-gallery/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/nakajima/silent-gallery/actions/workflows/codeql.yml/badge.svg)](https://github.com/nakajima/silent-gallery/actions/workflows/codeql.yml)
+[![Security Audit](https://github.com/nakajima/silent-gallery/actions/workflows/npm-audit.yml/badge.svg)](https://github.com/nakajima/silent-gallery/actions/workflows/npm-audit.yml)
+
 ## 概要
 
 Silent Galleryは、1日1枚の無言の写真をそっと置く場所です。写真は7日で流れ、反応も静かに消えます。評価や通知はありません。あるのは、光と静けさだけ。
@@ -61,11 +65,19 @@ npm run dev
 
 ## スクリプト
 
+### 開発
 - `npm run dev` - 開発サーバーの起動（Turbopack使用）
 - `npm run build` - プロダクションビルド
 - `npm run start` - プロダクションサーバーの起動
+
+### コード品質
 - `npm run lint` - ESLintの実行
 - `npm run typecheck` - TypeScriptの型チェック
+- `npm test` - テストの実行
+- `npm run test:watch` - テストのウォッチモード
+- `npm run test:coverage` - カバレッジ付きでテストを実行
+
+### データベース
 - `npm run db:generate` - Drizzleマイグレーションファイルの生成
 - `npm run db:push` - スキーマをデータベースにプッシュ
 - `npm run db:studio` - Drizzle Studioの起動
@@ -92,6 +104,32 @@ silent-gallery/
 ├── docker-compose.yml         # PostgreSQL用（オプション）
 └── tsconfig.json              # TypeScript設定
 ```
+
+## テスト
+
+このプロジェクトはJestとReact Testing Libraryを使用しています。
+
+```bash
+# 全テストを実行
+npm test
+
+# ウォッチモードでテストを実行
+npm run test:watch
+
+# カバレッジレポートを生成
+npm run test:coverage
+```
+
+## GitHub Actions
+
+このプロジェクトでは以下のGitHub Actionsワークフローが設定されています：
+
+- **CI** (`ci.yml`): テスト、リント、型チェック、ビルドを実行
+- **CodeQL** (`codeql.yml`): セキュリティスキャンを実行（週次）
+- **Security Audit** (`npm-audit.yml`): npm auditで脆弱性をチェック（日次）
+- **Dependency Review** (`dependency-review.yml`): PRでの依存関係の変更をレビュー
+- **PR Labeler** (`pr-labels.yml`): PRに自動的にラベルを付与
+- **Dependabot**: 依存関係の自動アップデート（週次）
 
 ## 仕様書
 
