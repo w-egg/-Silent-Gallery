@@ -12,6 +12,7 @@ export default async function ProfilePage() {
   }
 
   // ユーザー情報を取得
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userResult = await (db as any)
     .select()
     .from(users)
@@ -25,6 +26,7 @@ export default async function ProfilePage() {
   }
 
   // ユーザーの投稿を取得
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userPosts = await (db as any)
     .select()
     .from(posts)

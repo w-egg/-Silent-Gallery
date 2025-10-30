@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { put } from '@vercel/blob';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { nanoid } from 'nanoid';
 import { auth } from '@/auth';
 
 export const runtime = 'nodejs';
+
+const isDevelopment = process.env.NODE_ENV === 'development';
+const useVercelBlob = process.env.BLOB_READ_WRITE_TOKEN && !isDevelopment;
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,22 +47,38 @@ export async function POST(request: NextRequest) {
 
     // ユニークなファイル名を生成
     const imageKey = `${nanoid()}.${ext}`;
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
 
-    // アップロードディレクトリを作成（存在しない場合）
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
+    if (useVercelBlob) {
+      // Vercel Blobにアップロード（本番環境）
+      const blob = await put(imageKey, file, {
+        access: 'public',
+        addRandomSuffix: false,
+      });
 
-    // ファイルを保存
-    const filePath = join(uploadDir, imageKey);
-    await writeFile(filePath, buffer);
+      return NextResponse.json({
+        imageKey,
+        url: blob.url,
+        message: 'File uploaded successfully',
+      });
+    } else {
+      // ローカルファイルシステムにアップロード（開発環境）
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
 
-    return NextResponse.json({
-      imageKey,
-      url: `/uploads/${imageKey}`,
-      message: 'File uploaded successfully',
-    });
+      // アップロードディレクトリを作成（存在しない場合）
+      const uploadDir = join(process.cwd(), 'public', 'uploads');
+      await mkdir(uploadDir, { recursive: true });
+
+      // ファイルを保存
+      const filePath = join(uploadDir, imageKey);
+      await writeFile(filePath, buffer);
+
+      return NextResponse.json({
+        imageKey,
+        url: `/uploads/${imageKey}`,
+        message: 'File uploaded successfully',
+      });
+    }
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });

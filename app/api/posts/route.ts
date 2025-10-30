@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
         conditions.push(lte(posts.publishAt, cursorDate));
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       query = (db as any)
         .select()
         .from(posts)
@@ -47,6 +48,7 @@ export async function GET(request: NextRequest) {
         conditions.push(lte(posts.publishAt, cursorDate));
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       query = (db as any)
         .select()
         .from(posts)
@@ -88,6 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ユーザーの次回投稿可能時間をチェック
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userResult = await (db as any)
       .select()
       .from(users)
@@ -126,10 +129,12 @@ export async function POST(request: NextRequest) {
       createdAt: now,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (db as any).insert(posts).values(newPost);
 
     // 次回投稿可能時間を24時間後に更新
     const nextPostAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (db as any)
       .update(users)
       .set({ nextPostAt })

@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';
@@ -11,7 +12,7 @@ const errors: Record<string, string> = {
   Default: '認証エラーが発生しました。',
 };
 
-export default function AuthErrorPage() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
   const errorMessage = error && error in errors ? errors[error] : errors.Default;
@@ -46,5 +47,19 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#0f1220] text-[#e9ecf1] flex items-center justify-center">
+          <div className="text-white/60">Loading...</div>
+        </div>
+      }
+    >
+      <ErrorContent />
+    </Suspense>
   );
 }
