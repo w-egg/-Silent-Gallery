@@ -3,8 +3,15 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import Link from 'next/link';
+import { LogOut, User } from 'lucide-react';
 
 export default function HomePage() {
+  const { status } = useSession();
+  const isAuthenticated = status === 'authenticated';
+  const isLoading = status === 'loading';
+
   const features = useMemo(
     () => [
       {
@@ -31,23 +38,55 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#0f1220] text-[#e9ecf1]">
       {/* Header */}
       <header className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-white/70 to-white/20 shadow-[0_0_40px_-10px_rgba(255,255,255,0.7)]" />
           <span className="tracking-wide font-semibold">Silent Gallery</span>
-        </div>
-        <nav className="hidden sm:flex items-center gap-6 text-sm opacity-80">
-          <a href="/gallery" className="hover:opacity-100 transition-opacity">
+        </Link>
+        <nav className="flex items-center gap-6 text-sm opacity-80">
+          <Link href="/gallery" className="hover:opacity-100 transition-opacity">
             Gallery
-          </a>
-          <a href="#about" className="hover:opacity-100 transition-opacity">
+          </Link>
+          <a href="#about" className="hidden sm:inline hover:opacity-100 transition-opacity">
             Concept
           </a>
-          <a href="#features" className="hover:opacity-100 transition-opacity">
+          <a href="#features" className="hidden sm:inline hover:opacity-100 transition-opacity">
             Features
           </a>
-          <a href="#how" className="hover:opacity-100 transition-opacity">
-            How it works
-          </a>
+          {!isLoading && (
+            <>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/5 transition-all"
+                    title="マイページ"
+                  >
+                    <User className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="/post"
+                    className="px-4 py-2 rounded-2xl bg-white text-[#0f1220] font-medium hover:shadow-lg transition-all"
+                  >
+                    投稿する
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-white/20 hover:bg-white/5 transition-all"
+                    title="ログアウト"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className="px-4 py-2 rounded-2xl bg-white text-[#0f1220] font-medium hover:shadow-lg transition-all"
+                >
+                  サインイン
+                </Link>
+              )}
+            </>
+          )}
         </nav>
       </header>
 
@@ -65,18 +104,39 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a
+              {!isLoading && (
+                <>
+                  {isAuthenticated ? (
+                    <>
+                      <Link
+                        href="/post"
+                        className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white text-[#0f1220] text-sm font-medium shadow hover:shadow-lg transition-shadow"
+                      >
+                        投稿する <ArrowRight className="h-4 w-4" />
+                      </Link>
+                      <Link
+                        href="/profile"
+                        className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 border border-white/20 text-sm hover:bg-white/5 transition-all"
+                      >
+                        マイページ
+                      </Link>
+                    </>
+                  ) : (
+                    <Link
+                      href="/auth/signin"
+                      className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 bg-white text-[#0f1220] text-sm font-medium shadow hover:shadow-lg transition-shadow"
+                    >
+                      はじめる <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  )}
+                </>
+              )}
+              <Link
                 href="/gallery"
-                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 bg-white text-[#0f1220] text-sm font-medium shadow hover:shadow-lg transition-shadow"
+                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3 border border-white/20 text-sm hover:bg-white/5 transition-all"
               >
-                ギャラリーを見る <ArrowRight className="h-4 w-4" />
-              </a>
-              <a
-                href="#features"
-                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2 border border-white/20 text-sm hover:bg-white/5"
-              >
-                機能を見る
-              </a>
+                ギャラリーを見る
+              </Link>
             </div>
           </div>
 
