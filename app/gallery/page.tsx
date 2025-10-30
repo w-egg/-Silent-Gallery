@@ -248,35 +248,132 @@ function Header() {
   );
 }
 
+interface ReactionData {
+  reactionCounts: Record<string, number>;
+  userReactions: Record<string, string>;
+  total: number;
+}
+
 function ReactionButtons({ postId, expireAt }: { postId: string; expireAt: Date | null }) {
-  const [selectedReaction, setSelectedReaction] = useState<ReactionKind | null>(null);
+  const { data: session } = useSession();
+  const [reactionData, setReactionData] = useState<ReactionData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isExpired = expireAt ? new Date(expireAt) < new Date() : false;
 
-  const handleReaction = async (kind: ReactionKind) => {
-    if (isExpired) return;
+  // リアクションデータを取得
+  useEffect(() => {
+    const fetchReactions = async () => {
+      try {
+        const response = await fetch(`/api/reactions?postId=${postId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setReactionData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching reactions:', error);
+      }
+    };
 
-    setSelectedReaction(kind);
-    // TODO: API実装後にリアクションを送信
-    console.log('Reaction:', kind, 'for post:', postId);
+    fetchReactions();
+  }, [postId]);
+
+  const userReaction = session?.user?.id && reactionData?.userReactions[session.user.id];
+
+  const handleReaction = async (kind: ReactionKind) => {
+    if (isExpired || isSubmitting || !session?.user?.id) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/reactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId,
+          kind,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to submit reaction:', errorData.error);
+        return;
+      }
+
+      // リアクションデータを再取得
+      const reactionResponse = await fetch(`/api/reactions?postId=${postId}`);
+      if (reactionResponse.ok) {
+        const data = await reactionResponse.json();
+        setReactionData(data);
+      }
+    } catch (error) {
+      console.error('Error submitting reaction:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 各リアクションの「光の濃さ」を計算（0-1の範囲）
+  const getReactionIntensity = (kind: ReactionKind): number => {
+    if (!reactionData || reactionData.total === 0) return 0;
+    const count = reactionData.reactionCounts[kind] || 0;
+    // 最大10件を基準に濃さを計算（10件以上は100%）
+    return Math.min(count / 10, 1);
   };
 
   return (
-    <div className="flex items-center gap-4">
-      {(Object.keys(REACTION_ICONS) as ReactionKind[]).map((kind) => (
-        <button
-          key={kind}
-          onClick={() => handleReaction(kind)}
-          disabled={isExpired}
-          className={`
-            text-3xl p-3 rounded-full border transition-all
-            ${selectedReaction === kind ? 'bg-white/20 border-white/40 scale-110' : 'bg-white/5 border-white/10'}
-            ${isExpired ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10 hover:scale-110'}
-          `}
-          aria-label={`${kind} reaction`}
-        >
-          {REACTION_ICONS[kind]}
-        </button>
-      ))}
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        {(Object.keys(REACTION_ICONS) as ReactionKind[]).map((kind) => {
+          const intensity = getReactionIntensity(kind);
+          const isSelected = userReaction === kind;
+          const count = reactionData?.reactionCounts[kind] || 0;
+
+          return (
+            <button
+              key={kind}
+              onClick={() => handleReaction(kind)}
+              disabled={isExpired || !session?.user?.id}
+              className={`
+                relative text-3xl p-3 rounded-full border transition-all
+                ${isSelected ? 'bg-white/30 border-white/60 scale-110 shadow-lg' : 'bg-white/5 border-white/10'}
+                ${isExpired || !session?.user?.id ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white/10 hover:scale-110'}
+              `}
+              style={{
+                opacity: intensity > 0 ? 0.5 + intensity * 0.5 : undefined,
+                boxShadow: intensity > 0 ? `0 0 ${10 + intensity * 20}px rgba(255,255,255,${intensity * 0.3})` : undefined,
+              }}
+              aria-label={`${kind} reaction`}
+              title={count > 0 ? `${count}人が反応しています` : undefined}
+            >
+              {REACTION_ICONS[kind]}
+              {/* 光の滲み効果 */}
+              {intensity > 0 && (
+                <div
+                  className="absolute inset-0 rounded-full blur-md pointer-events-none"
+                  style={{
+                    background: `radial-gradient(circle, rgba(255,255,255,${intensity * 0.4}) 0%, transparent 70%)`,
+                  }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 静かな反応の表示 */}
+      {reactionData && reactionData.total > 0 && (
+        <p className="text-center text-sm text-white/40">
+          {reactionData.total}の静かな反応
+        </p>
+      )}
+
+      {!session?.user?.id && (
+        <p className="text-center text-xs text-white/30">
+          サインインすると反応できます
+        </p>
+      )}
     </div>
   );
 }

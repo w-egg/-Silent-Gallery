@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Upload, X, ArrowLeft, Clock } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 
 interface PostClientProps {
   canPost: boolean;
@@ -25,7 +26,7 @@ export default function PostClient({ canPost, nextPostAt }: PostClientProps) {
     ? Math.max(0, Math.ceil((new Date(nextPostAt).getTime() - Date.now()) / (1000 * 60 * 60)))
     : 0;
 
-  const handleFileSelect = useCallback((file: File) => {
+  const handleFileSelect = useCallback(async (file: File) => {
     // ファイルタイプチェック
     if (!file.type.startsWith('image/')) {
       setError('画像ファイルを選択してください');
@@ -39,15 +40,36 @@ export default function PostClient({ canPost, nextPostAt }: PostClientProps) {
       return;
     }
 
-    setSelectedFile(file);
-    setError(null);
+    try {
+      // 画像を圧縮・EXIF除去
+      const options = {
+        maxSizeMB: 5,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+        // EXIF情報を除去（位置情報やカメラ情報を削除）
+        preserveExif: false,
+        fileType: 'image/webp',
+        initialQuality: 0.8,
+      };
 
-    // プレビュー生成
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+      const compressedFile = await imageCompression(file, options);
+
+      console.log(`元のサイズ: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      console.log(`圧縮後: ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+
+      setSelectedFile(compressedFile);
+      setError(null);
+
+      // プレビュー生成
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (err) {
+      console.error('Error processing image:', err);
+      setError('画像の処理中にエラーが発生しました');
+    }
   }, []);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,9 +267,12 @@ export default function PostClient({ canPost, nextPostAt }: PostClientProps) {
           {/* Info Box */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <h3 className="font-semibold text-blue-900 mb-2">Drift Publishingについて</h3>
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-blue-800 mb-2">
               投稿した写真は、0〜3時間のランダムな遅延後にギャラリーに公開されます。
               これにより、匿名性が高まり、より自由な表現が可能になります。
+            </p>
+            <p className="text-xs text-blue-700">
+              ※ 画像は自動的にEXIF情報（位置情報・撮影日時等）を除去し、WebP形式に変換・圧縮されます。
             </p>
           </div>
 

@@ -6,6 +6,44 @@ import { nanoid } from 'nanoid';
 
 export const runtime = 'nodejs';
 
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const postId = searchParams.get('postId');
+
+    if (!postId) {
+      return NextResponse.json({ error: 'postId is required' }, { status: 400 });
+    }
+
+    // 投稿のすべてのリアクションを取得
+    const result = await (db as any)
+      .select()
+      .from(reactions)
+      .where(eq(reactions.postId, postId));
+
+    // リアクションの種類ごとに集計
+    const reactionCounts: Record<string, number> = {};
+    const userReactions: Record<string, string> = {}; // userId -> kind
+
+    result.forEach((reaction: { kind: string; userId: string | null }) => {
+      reactionCounts[reaction.kind] = (reactionCounts[reaction.kind] || 0) + 1;
+      if (reaction.userId) {
+        userReactions[reaction.userId] = reaction.kind;
+      }
+    });
+
+    return NextResponse.json({
+      postId,
+      reactionCounts,
+      userReactions,
+      total: result.length,
+    });
+  } catch (error) {
+    console.error('Error fetching reactions:', error);
+    return NextResponse.json({ error: 'Failed to fetch reactions' }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
