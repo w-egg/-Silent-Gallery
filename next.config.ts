@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '5mb',
     },
   },
+  eslint: {
+    // ビルド時はESLintエラーを無視（CIで別途lintを実行）
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
